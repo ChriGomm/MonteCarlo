@@ -1,0 +1,477 @@
+\documentclass[12pt]{article}
+
+
+\usepackage[utf8]{inputenc}
+ 
+\usepackage[ngerman]{babel}
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{ntheorem}
+%\usepackage{bbm}
+%\usepackage{dsfont}
+\usepackage{color}
+\usepackage{slashed}
+\usepackage{esint}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage{mathabx}
+\usepackage{changepage}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{mwe}
+\usepackage{multirow}
+\usepackage{hyperref}
+%\usepackage{cleveref}
+
+
+\begin{document}
+\newcommand{\half}{\frac{1}{2}}
+\begin{titlepage}
+    \begin{center}
+        \vspace*{1cm}
+            
+        \Huge
+        \textbf{Ising Modell}
+            
+        
+        \large
+        
+            
+        \vspace{0.7cm}
+            Lösung durch Monte-Carlo Simulation
+        \vspace{2cm}
+        
+
+        \textbf{Christian Gommeringer}
+            
+        \vspace*{7cm}
+        
+        
+            
+        
+              
+        
+            
+        
+            
+        \normalsize
+        betreut durch Dr. Quandt und Dr. Burgio\\
+        \vspace*{1cm}
+        Tübingen, den \today
+        
+            
+    \end{center}
+\end{titlepage}
+
+
+\section*{Aufgabe 1}
+Zunächst soll eine Wahrscheinlichkeitsverteilung für eine Wahrscheinlichkeitsdichte numerisch unter der Benutzung eines Zufallszahlengenerators erstellt werden, der Zahlen gleichverteilt zwischen 0 und 1 erzeugt. Hierfür benutzen wir die Beziehung für eine Wahrscheinlichkeitsdichte im Intervall [a,b].
+
+$$y=F(z)=\int_a^zf(x)\text{d}x$$
+Wenn wir uns nun die Funktion $F^{-1}(y)$ anschauen, nimmt diese alle Werte im Intervall [0,1] an. Dass die Werte auch mit der entsprechenden Wahrscheinlichkeit $f(x)$ gewählt werden, wenn y durch einen gleichverteilten Zufallsgenerator erzeugt wird, sieht man auf folgende Weise. Damit ein Wert x im Intervall [x,x+dx] angenommen wird, muss y in einem Intervall [y(x),y(x)+dy(x)] gezogen worden sein. Die Wahrscheinlichkeit dafür ist gerade dy(x). Es gilt allerdings
+$$dy(x)=f(x)dx$$
+und demnach werden Werte aus [x,x+dx] gerade mit der richtigen Wahrscheinlichkeit f(x) gezogen. Wenn man nun eine Wahrscheinlichkeitsverteilung verwenden möchte, bei der eine analytische Integration und Invertierung nicht möglich ist, kann man nach folgender Weise vorgehen. Man wählt eine Funktion für die sich das erfüllen lässt und verschiebt sie auf soweit nach oben, dass sie für das ganze betrachtete Intervall über der gebenen Wahrscheinlichkeitsdichte liegt. Wir nennen diese nach oben verschobene Funktion im folgenden g(x) Nun erzeugt man Tupel von zwei Zahlen, von denen die erste (x) nach vorherigem Verfahren für die einhüllende Funktion gezogen werden, und die zweite (y) gleich verteilt in einem Inervall [0,g(x)] erstellt wird. Gilt $f(x)\leq y$, wird die Zahl x behalten, andernfalls wird sie verworfen. Auf diese Weise wird das Ensemble $\{x\}$ nach der vorgegebenen Wahrscheinlichkeit f(x) erstellt.
+In unserem Fall möchten wir diese Verteilung für die Funktion 
+$$f(x)=\frac{1}{\sqrt{2\pi\sigma^2}}\exp(-\frac{(x-\mu)^2}{2\sigma^2})$$
+erstellen. Als Einhüllende wähle ich
+$$g(x)=\exp(-|x-\mu|+\alpha)$$ ein ausreichendes $\alpha$ zu bestimmen, berechne ich den Schnittpunkt der beiden Funktionen. Ich nehme zudem die vereinfachende Substitution $x-\mu=\vcentcolon{z}$ vor und beschrenke mich auf den Fall $z>0$. Dann muss für eine Intersektion gelten.
+$$z-\alpha=z^2/2\sigma^2+\ln{\sqrt{\pi\sigma^2}}$$
+das führt auf eine Bedingung 
+$$z_{1/2}=\sigma^2\left(1\pm\sqrt{1-\frac{2}{\sigma^2}(\ln{\sqrt{2\pi\sigma^2}}+\alpha)}\right)$$
+Damit es keine Schnittpunkte gibt muss gelten
+$$\alpha\geq\frac{\sigma^2}{2}-\ln{\sqrt{2\pi\sigma^2}}$$
+Das beschriebenen Verwerfungsverfahren basiert darauf, dass man eine entsprechende Verteilung generiert, wenn man im zweidimensionalen Raum des Funktionsgraphen in der Fläche unterhalb der Wahrscheinlichkeitsfunktion Punkte mit einer gleichmäßigen Flächendichte erzeugt. Dass dies äquivalent zu obiger Wahrscheinlichkeitserzeugung durch Invertierung ist, sieht man, wenn man sich die Wahrscheinlichkeit betrachtet mit obigem Verfahren in eine Fläche dA = [x,x+dx]x[y+dy] (x und y unabhängig aber innnerhalb der von der Funktion eingeschlossenen Fläche) zu treffen. Für das x-Intervall gilt nach der Wahrscheinlichkeitsverteilung die Wahrseinlichkeit $\rho_x=f(x)dx$ und für das y-Intervall, da dieses gleichverteilt gezogen wird, $\rho_y=1/f(x)\,dy$. Und damit ist die Wahrscheinlichkeit in die Fläche zu treffen
+$$\rho_A=\rho_x\cdot\rho_y=dx\,dy$$
+überall konstant. Das dieses Verfahren auch für eine nichtnormierte Funktion f(x) eine gleichmäßige Flächendichteverteilung erzeugt, sieht man hier auch gut, da in diesem Fall $\rho_x$ lediglich mit einer konstanten Normierungskonstanten multipliziert werden müsste.\newline
+Für unsere konkrete Aufgabe befassen wir uns mit dem Fall $\mu=0,\;\sigma=1$. Dafür verwende ich, wie oben schon erwähnt, für die Erzeugung der einheitlichen Flächendichte die Funktion
+$$g(x)=\frac{1}{2}{e}^{-|x|}$$
+Es gilt
+für $y<\half,x<0$
+\begin{align*}
+y &= \int_{-\infty}^xg(x)dx\\
+&=\half\,e^x\\
+\Rightarrow\;x(y)&=\ln(2y)\end{align*}
+und für $y\geq\half,x\geq0$
+\begin{align*}
+    y&=\int_{-\infty}^xg(x)dx\\
+    &=\half+\half(1-e^{-x})\\
+    \Rightarrow\;x(y)&=-\ln(2(1-y))
+\end{align*}
+Mit dieser Wahrscheinlichkeit lässt sich nun mit Hilfe der Verwerfungsmethode auch eine Gaußverteilung erzeugen. 
+
+Wenn man nun das Integral einer Funktion berechnen will, gibt es die Möglichkeit, dies über den Vergleich zu einem bekannten Integral zu machen, wobei am wiederum einfach das Verwerfungsverfahren anwenden kann. Das Verhältnis zwischen den akzeptierten Punkten zur Gesamtzahl der erzeugten Punkte enspricht nämlich genau dem Flächenverhältnis der gesuchten zur einschließenden Fläche.
+Uns interessiert das Integral
+$$\int_{-\infty}^\infty\,e^{-x^2/2}$$
+Als einhüllende verwende ich $\exp(-|x|+0.6)$ und kann wie oben beschrieben die abgeleitete Wahrscheinlichkeitsverteilung von $g(x)=\exp(-|x|)/2$ verwenden.
+Ich erhalte über diese Methode bei $10^{1000000}$ Punkten und einer Rechenzeit von $1.8\,s$ einen Fehler von -0.000471, und bei $10^{10000000}$ Punkten (10 mal mehr) und einer Rechenzeit von $18.2\,s$ einen Fehler von 0.000136. Der Algorithmus skaliert also ziemlich schlecht und liefert auch kein besonders gutes Ergebnis.
+
+Als zweite Möglichkeit könnte man die Funktion auch als Treppenfunktion approximieren. Die Stützstellen wähle ich zufällig nach einer Wahrscheinlichkeitsveteilung aus, die aus der Ableitung bestimmt wurde. Über dieses Verfahren erreiche ich mit $10^5$ Stützstellen und einer Rechenzeit von $0.2\,s$ einen Fehler von $3.06691\text{e-8}$.
+
+
+
+
+\section*{Aufgabe 2}
+Nachdem wir uns mit der Grundmethodik der Montecarlo Simulation vertraut gemacht haben, möchten wir uns nun auch schon dem Ising Modell zuwenden. Das Ising Modell behandelt ein System von Spin-Zyständen, auf einem Gitter im Raum. Die Spins können die Werte -1 und 1 annehmen und Der Hamiltonian ihrer Wechselwirkung betrachtet nur Wechselwirkungen nächster Nachbarn.
+$$H=-J\sum_{<i,j>}s_i\,s_j-\sum_is_i\,h$$
+Wobei $J$ der Kopplungsparameter der Spins und $h$ das externe Feld ist, was im Folgenden 0 sein wird. In 2 Dimensionen wurde diese Problem von Onsager gelöst. Für $h=0$ und im thermodynamischen Limes, in dem die Anzahl der Spins undendlich groß wird, lautet die Lösung für die Energiedichte
+$$\varepsilon(\beta)=-J\coth(2\beta{J})\cdot\left[1+(2\tanh^2(2\beta{J})-1)\frac{2}{\pi}K(\xi)\right],$$
+wobei
+$$K(\xi)=\int_0^{\frac{\pi}{2}}\frac{d\theta}{\sqrt{1-\xi^2\sin^2\theta}}$$
+das vollständige elliptische Integral 1. Ordnung ist.
+$$\xi=2\frac{\tanh(2\beta{J})}{\cosh(2\beta{J})}$$
+Des weiteren ist der mittlere Betrag der Magnetisierungsdichte gegeben durch
+$$|m|(\beta)=\left[1-\sinh^{-4}(2\beta{J})\right]^{\frac{1}{8}}$$
+Wir werden nun Isingsystem mit LxL quadratisch angeordneten Spins für L = 2,3,4 betrachten. Hier soll die Energiedichte und der mittlere Betrag der Magnetisierung durch direktes Summieren aller Möglichkeiten mit deren entsprechender Wahrscheinlichkeit gemäß der kanonischen Zustandsdichte
+$$Z=\sum_{\{s_i\}}\exp(-\beta{H(\{s_i\})})$$
+Danach sollen diese Größen mit der Lösung Onsagers verglichen werden. Ich stelle die Ergebnisse graphisch vor.
+\begin{figure}[H]\hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{2x2_mag.png}
+    \caption{das 2x2 Gitter}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{3x3_mag.png}
+    \caption{das 3x3 Gitter}
+    \end{subfigure}
+    \hfill
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{4x4_mag.png}
+    \caption{das 4x4 Gitter}
+    \end{subfigure}
+    \hfill
+    \caption{Verlauf von $\left\langle|m|\right\rangle$ in Abhängigkeit der Temperatur}
+    \end{figure}
+Es lässt sich erkennen, dass die Magnetiesierungskurven für sehr kleine Anzahlen an Spins natürlich relative weit von Onsagers exakter Lösung abweichen, die ja für den thermodynamischen Limes gilt. Insbesondere zeigen die kleinen Spinsysteme keinen Phasenübergang 2. Ordnung.
+\begin{figure}[H]\hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{2x2_eng.png}
+    \caption{das 2x2 Gitter}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{3x3_eng.png}
+    \caption{das 3x3 Gitter}
+    \end{subfigure}
+    \hfill
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{4x4_eng.png}
+    \caption{das 4x4 Gitter}
+    \end{subfigure}
+    \hfill
+    \caption{Verlauf von $\left\langle\epsilon\right\rangle$ in Abhängigkeit der Temperatur}
+    \end{figure}
+Auch bei den Energien kann man eine Abweichung erkennen. Eine Berechnung der mittleren Magnetiesierung $\left\langle{m}\right\rangle$ kann entfallen, da diese aus Symetriegründen immer 0 ist. Eine Inversion aller Spins ist nämlich immer gleich warhscheinlich wie der ursprünliche Zustand und diese beiden Zustände heben sich in der Mittelung folglich weg.
+
+\section*{Aufgabe 3}
+Bei den kleinen Gittergrößen des letzten Abschnitts war es noch möglich die Mittelwerte explizit und exakt zu berechnen. Da die Anzahl an Möglichkeiten jedoch mit $2^N$ mit der Anzahl der Spins steigt, ist diese Methode für größere Gitter nicht mehr praktizierbar. Hier kommt der Monte-Carlo Algorithmus ins Spiel. Wir möchten für ein Gitter der Größe 128x128, den mittleren Magnetisierungsbetrag $ \left\langle |m|\right\rangle$ und die mittlere Energiedichte ohne Einwirkung eines externen Feldes (h=0) bestimmen. In diesem Abschnitt werden wir den multihit Metropolis Update Algorithmus verwenden. Zunächst müssen passende Thermalisierungszeiten bestimmt werden. Dazu messe ich nach jedem Update Schritt die Magnetiesierung und Energie und trage dies gegen die Nummer des Updates auf. Das führe ich für verschiedene Temperaturen und multihit Werte duch. \newline\newline
+
+
+
+
+
+
+\begin{figure}[H]\hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{mh3_46.png}
+    \caption{Thermalisierungskurve für $\beta=0.46$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{mh3_49.png}
+    \caption{Thermalisierungskurve für $\beta=0.49$}
+    \end{subfigure}
+    \hfill
+    \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für 3 multihits}
+\end{figure}
+
+\begin{figure}[H]
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{mh3_53.png}
+    \caption{Thermalisierungskurve für $\beta=0.53$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{mh3_6.png}
+    \caption{Thermalisierungskurve für $\beta=0.6$}
+    \end{subfigure}
+    \hfill
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{mh3_7.png}
+    \caption{Thermalisierungskurve für $\beta=0.7$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{mh3_8.png}
+    \caption{Thermalisierungskurve für $\beta=0.8$}
+    \end{subfigure}
+    \hfill
+    \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für 3 multihits}
+    \end{figure}
+
+
+    \vspace*{-4cm}\begin{figure}[H]\hspace*{-1.5cm}
+        \begin{subfigure}{0.4\textwidth}
+        \includegraphics[scale=0.55]{mh4_46.png}
+        \caption{Thermalisierungskurve für $\beta=0.46$}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}{0.4\textwidth}
+        \hspace*{-0.8cm}
+        \includegraphics[scale=0.55]{mh4_49.png}
+        \caption{Thermalisierungskurve für $\beta=0.49$}
+        \end{subfigure}
+        \hfill
+        \hspace*{-1.5cm}
+        \begin{subfigure}{0.4\textwidth}
+        \includegraphics[scale=0.55]{mh4_53.png}
+        \caption{Thermalisierungskurve für $\beta=0.53$}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}{0.4\textwidth}
+        \hspace*{-0.8cm}
+        \includegraphics[scale=0.55]{mh4_6.png}
+        \caption{Thermalisierungskurve für $\beta=0.6$}
+        \end{subfigure}
+        \hfill
+        \hspace*{-1.5cm}
+        \begin{subfigure}{0.4\textwidth}
+        \includegraphics[scale=0.55]{mh4_7.png}
+        \caption{Thermalisierungskurve für $\beta=0.7$}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}{0.4\textwidth}
+        \hspace*{-0.8cm}
+        \includegraphics[scale=0.55]{mh4_8.png}
+        \caption{Thermalisierungskurve für $\beta=0.8$}
+        \end{subfigure}
+        \hfill
+        \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für 4 multihits}
+        \end{figure}
+
+
+
+\vspace*{-4cm}\begin{figure}[H]\hspace*{-1.5cm}
+            \begin{subfigure}{0.4\textwidth}
+            \includegraphics[scale=0.55]{mh5_46.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.46$}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}{0.4\textwidth}
+            \hspace*{-0.8cm}
+            \includegraphics[scale=0.55]{mh5_49.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.49$}
+            \end{subfigure}
+            \hfill
+            \hspace*{-1.5cm}
+            \begin{subfigure}{0.4\textwidth}
+            \includegraphics[scale=0.55]{mh5_53.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.53$}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}{0.4\textwidth}
+            \hspace*{-0.8cm}
+            \includegraphics[scale=0.55]{mh5_60.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.6$}
+            \end{subfigure}
+            \hfill
+            \hspace*{-1.5cm}
+            \begin{subfigure}{0.4\textwidth}
+            \includegraphics[scale=0.55]{mh5_70.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.7$}
+            \end{subfigure}
+            \hfill
+            \begin{subfigure}{0.4\textwidth}
+            \hspace*{-0.8cm}
+            \includegraphics[scale=0.55]{mh5_80.0.png}
+            \caption{Thermalisierungskurve für $\beta=0.8$}
+            \end{subfigure}
+            \hfill
+            \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für 5 multihits}
+\end{figure}
+
+
+       
+    
+\vspace*{-4cm}\begin{figure}[H]\hspace*{-1.5cm}
+\begin{subfigure}{0.4\textwidth}
+                \includegraphics[scale=0.55]{mh6_46.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.46$}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}{0.4\textwidth}
+                \hspace*{-0.8cm}
+                \includegraphics[scale=0.55]{mh6_49.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.49$}
+                \end{subfigure}
+                \hfill
+                \hspace*{-1.5cm}
+                \begin{subfigure}{0.4\textwidth}
+                \includegraphics[scale=0.55]{mh6_53.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.53$}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}{0.4\textwidth}
+                \hspace*{-0.8cm}
+                \includegraphics[scale=0.55]{mh6_60.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.6$}
+                \end{subfigure}
+                \hfill
+                \hspace*{-1.5cm}
+                \begin{subfigure}{0.4\textwidth}
+                \includegraphics[scale=0.55]{mh6_70.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.7$}
+                \end{subfigure}
+                \hfill
+                \begin{subfigure}{0.4\textwidth}
+                \hspace*{-0.8cm}
+                \includegraphics[scale=0.55]{mh6_80.0.png}
+                \caption{Thermalisierungskurve für $\beta=0.8$}
+                \end{subfigure}
+                \hfill
+                \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für 6 multihits}
+\end{figure}
+Es ist zu erkennen, dass bei 5 multihits sich die Thermalisierung am schnellsten einstellt. Außerdem sind für verschiedene Temperaturen unterschiedliche Thermalisierungszeiten zu erwarten. Ich wähle für 5 multihits folgende Anzahlen an Decorrelierungsschritten. 
+\begin{itemize}
+    \item für $\beta\leq0.4$ $6\,000$ Schritte
+    \item für $0.4<\beta\leq 0.47$ $10\,000$ Schritte
+    \item für $0.47\geq\beta\leq0.7$ $7\,000$ Schritte
+    \item für $\beta>0.7$ $10\,000$ Schritte
+\end{itemize}
+
+Mit disen  Einstellungen ließ ich das Programm jeweils 100 Messpunkte für 35 Temperaturwerte aufnehmen, was ca. 1h 56min dauerte. Die Egebnisse sind in folgendem Diagramm dargestellt.
+
+\begin{figure}[H]\centering\includegraphics[scale=0.7]{mag_curve_met.png}\caption{Magnetiesierungskurve ermittelt durch den Metropolis Algorithmus}\end{figure}
+
+Als nächstes berechne ich noch $\langle |m| \rangle$ und $\langle m^2 \rangle$ am kritischen Punkt der Onsager Lösung für Gitter der Größe 32x32, 8x8, sowie 4x4 berechnen . Letzeres Ergebnis kann ich verwenden, um die Güte des Algorithmus für kleine Gittergrößen abzuschätzen, in dem ich es mit dem nach Aufgabe 2 exakt berechneten Wert vergleiche.
+\begin{table}[H]\centering\begin{tabular}{c|c|c|c|c|c}&32x32&8x8&4x4&4x4&4x4(exakt)\\
+    therm. sweeps&$150\,000$&$150\,000$&$160\,000$&$500\,000$&\\
+    $\langle |m| \rangle$&0.682&0.783&0.822&0.84&0.844\\
+    $\langle m^2 \rangle$&0.49&0.647&0.733&0.7595&0.761
+\end{tabular}\caption{Diese Werte wurden für eine Temperatur von $\beta=0.4406868$ berechnet. In der ersten Zeile ist angegeben, wie groß ich die Dekorrelationszeit gewählt habe.}\end{table}
+
+
+\section*{Aufgabe 4}
+In dieser Aufgabe werde ich mich nun mit dem Wärmebad Update Schema aus eineander setzen. Ich vergleiche dessen Performance mit dem Metropolis Algorithmus, indem ich mit dem Wärmebad Schema noch einmal die Aufgabe aus dem vorherigen Abschnitt bearbeite. Zunächst muss wieder die Decorrelierungslänge bestimmt werden.
+\begin{figure}[H]\hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_B_30.png}
+    \caption{$\beta=0.30$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_B_46.png}
+    \caption{$\beta=0.46$}
+    \end{subfigure}
+    \hfill
+\caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für den Heat Bath Algorithmus}
+\end{figure}
+
+\begin{figure}[H]
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_B_49.png}
+    \caption{Thermalisierungskurve für $\beta=0.49$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_B_53.png}
+    \caption{Thermalisierungskurve für $\beta=0.53$}
+    \end{subfigure}
+    \hfill
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_B_60.png}
+    \caption{Thermalisierungskurve für $\beta=0.6$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_B_70.png}
+    \caption{Thermalisierungskurve für $\beta=0.7$}
+    \end{subfigure}
+    \hfill
+    \caption{Thermalisierungsverhalten für verscheidene $\beta$-Werte für den Heat Bath Algorithmus}
+    \end{figure}
+
+    \begin{figure}[H]\centering\includegraphics[scale=0.55]{hb_B_80.png}\caption{Thermalisierungskurve für $\beta=0.8$ für den Heat Bath Algorithmus}\end{figure}
+Aus diesen Thermalisierungskurven wähle ich für $\beta\in[0.44,0.53]$ ein Decorrelierungszeit von $15\,000$ Iterationen und ansonsten $5\,000$ Iterationen. Mit diesen Parametern erhalte ich folgende Magnetisierungskurve.
+\begin{figure}[H]\centering\includegraphics[scale=0.6]{hb_mag_curve.png}\caption{Magnetiesierungskurve ermittelt durch den Heat Bath Algorithmus}\end{figure}
+Auch hier kann ich die absolute Magnetisiertung für kleinere Gitter am kritischen Punkt ausrechnen.
+
+\begin{table}[H]\centering\begin{tabular}{c|c|c|c|c}&32x32&8x8&4x4&4x4(exakt)\\
+    $\langle |m| \rangle$&0.524&0.752&0.879&0.844\\
+    $\langle m^2 \rangle$&0.319&0.605&0.799&0.761
+\end{tabular}\caption{Diese Werte wurden für eine Temperatur von $\beta=0.4406868$ berechnet.}\end{table}
+
+Die Ergebniss für das 4x4 Gitter stimmen dabei gut mit der exakten Lösung überein, obwohl eine Monte-Carlo Simulation bei diesen Dimensionen nicht von Vorteil ist.
+
+Als Abschluss lässt sich noch die Wirkung eines externen Magnetfeldes untersuchen. Dafür genügt eine leichte Modifizierung der Hamilton Funktion.
+$$H=-J\sum_{<i,j>}s_i\,s_j-\sum_is_i\,h$$
+Ich verwende für die folgenden Untersuchungen wieder den Heat Bath Algorithmus. Zunächst führe ich wieder einen Test zur Bestimmung der Dekorrelationszeiten in Abhängigkeit des externen Magnetfeldes durch. Die Temperatur ist mit $\beta=0.6$ in der Ferromagnetischen Phase gewählt.
+\vspace*{-4cm}\begin{figure}[H]\hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_h_4.png}
+    \caption{Thermalisierungskurve für $h=0.04$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_h_5.png}
+    \caption{Thermalisierungskurve für $h=0.05$}
+    \end{subfigure}
+    \hfill
+\end{figure}
+\begin{figure}[H]
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_h_6.png}
+    \caption{Thermalisierungskurve für $h=0.06$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_h_7.png}
+    \caption{Thermalisierungskurve für $h=0.07$}
+    \end{subfigure}
+    \hfill
+    \hspace*{-1.5cm}
+    \begin{subfigure}{0.4\textwidth}
+    \includegraphics[scale=0.55]{hb_h_8.png}
+    \caption{Thermalisierungskurve für $h=0.08$}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.4\textwidth}
+    \hspace*{-0.8cm}
+    \includegraphics[scale=0.55]{hb_h_30.png}
+    \caption{Thermalisierungskurve für $\beta=0.3$}
+    \end{subfigure}
+    \hfill
+    \caption{Thermalisierungsverhalten für verscheidene $h$-Werte für \newline$\beta=0.6$}
+    \end{figure}
+    \begin{figure}[H]\centering\includegraphics[scale=0.55]{hb_h_85.png}\caption{Thermalisierungsverhalten für $h=0.85$ für $\beta=0.6$}\end{figure}
+
+Wie zu erkennen ist braucht das System sehr wenige Updates bis es thermalisiert wird. Ich verwende daher als Dekorrelationszeit 500 Iterationen. Um das $"$Hysterese$"$-Verhalten zu beobachten, führe ich wieder nacheinander die Messungen für die mittlere absolute Magenetisierung durch. Allerdings ist es hier wichtig, das System nicht für jeden neuen Wert des Magnetfeldes erneut zu initialisieren, sondern dessen Konfiguration in die neue Messung mitzunehmen. Wenn ich bei meienem größten Wert des externen Magnetfeldes angekommen bin, führe ich von hier die Messung nocheinnmal komplett in die andere Richtung durch. Wenn das tue erhalte ich folgende Magnetisierungskurve.
+\begin{figure}[H]\centering\includegraphics[scale=0.55]{Hysterese.png}\caption{$"$Hysterese$"$-Kurve}\end{figure}
+Trozt der geringen Messpunkte, die ich aufgrund des hohen Zeitaufwands für die Messungen durchgeführt habe, ist zu erkennen, dass sich der Magnetiesierungswert für kleine äußere Magnetfelder für verschiedene Durchlaufrichungen unterscheidet und davon abhängt, ob aus welcher  Ausrichtung des Systems man kommt. Dies ist das gleiche Verhalten, dass auch bei Hysterese beobachtet wird, allerdings handelt es sich hier nicht um eine akurate Simulation dieses physikalischen Phänomens, sondern ist viel mehr ein Zeichen der Schwäche der Implementation. In einem idealen Algorithmus sollte die Decorrelierungslänge so gewählt sein, dass es eben keine Korrelation zwischen dem momentanen und den vorherigen Messungen gibt. Dies ist offenbar bei meiner Implementierung nicht der Fall.
+
+
+\section{Fazit}
+Dieser Versuch half mir zum einen zu verstehen, wie man beliebige Wahrscheinlichkeitverteilungen generiert, und wie man dafür Wahrscheinlichkeitsfunktionen invertiert. Zum anderen lernte ich einen am Fall des Ising Modells den Typ der Monte-Carlo Simulationen, als wirkungsvolles, wenn auch rechenaufwändiges, verfahren zum Lösen von hochdimensionalen Integralen oder Summen kennen. Trotz dem größeren Maß an Zeit ist es jedoch wichtig, die Dekorrelationszeit groß genug zu wählen, was insbesondere auch bei der Hystersekurve deutlich wurde.
+
+
+
+\end{document}
