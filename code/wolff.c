@@ -5,14 +5,14 @@
 #include <math.h>
 //#include <omp.h>
 
-const int L = 128;
+const int L = 32;
 // boundary conditions implementation
 void rb();
-void spinScreener(double exponential, int start_x, int start_y, int ref);
+void spinScreener(int visited[32][32],int cluster[32][32], double exponential, int start_x, int start_y, int ref);
 void sweep(double exponential);
 int Ham(int i, int j);
 // da omp für mich nicht funktioniert hat, habe ich das Programm wieder auf ein Gitter umgeschrieben um möglicherweise Zeit zu sparen.
-int lat[128][128] = {0};
+int lat[32][32] = {0};
 
 // maximalwert des random number generators in C
 double max = (double)RAND_MAX;
@@ -51,8 +51,18 @@ int main()
     FILE *datei2;
     datei2 = fopen("ham_wolff.txt","w");
 
+    // FILE *cluster;
+    // cluster = fopen("suveillance.txt","w");
     // hot start, außerhalb der Temperaturschleife ergibt glattere Resutlate
-    for (int i=0;i<L;++i)
+    
+    // rb();
+    //#pragma omp parallel f
+    for (int n=0; n<35;++n)
+    {
+        if (n>=13){
+    double expo = exp(-2*beta[n]);
+   
+   for (int i=0;i<L;++i)
     { 
         for (int j=0;j<L;++j)
         {
@@ -61,16 +71,9 @@ int main()
 
         }
     }
-    // rb();
-    //#pragma omp parallel f
-    for (int n=0; n<35;++n)
-    {
-        if (n>=13){
-    double expo = exp(-2*beta[n]);
-   
         int Hamilton_store = 0;
         int mag_store = 0;
-        int iter = 20000;
+        int iter = 400;
         
         for ( int N =0; N<iter; ++N)
         {
@@ -120,7 +123,7 @@ int main()
 
     fclose(datei);   
     fclose(datei2);
-    
+    // fclose(cluster);
     return 0;
 }
 
@@ -148,25 +151,68 @@ int Ham(int i, int j)
 
 }
 
-void spinScreener(double exponential,int start_x,int start_y,int ref){
-    if (lat[start_x][start_y]==ref){
-        
-        double rand_num = ((double)random())/(max);
-        if (rand_num<=1-(exponential)){
-            lat[start_x][start_y] *= -1;
-        }
-            spinScreener(exponential,(start_x+1)%(L),start_y,ref);
-            spinScreener(exponential,(L+start_x-1)%(L),start_y,ref);
-            spinScreener(exponential,start_x,(start_y+1)%(L),ref);
-            spinScreener(exponential,start_x,(L+start_y-1)%(L),ref);
-        
+void spinScreener(int visited[32][32],int cluster[32][32], double exponential,int start_x,int start_y,int ref){
+    if (visited[start_x][start_y]==0){
+        visited[start_x][start_y] = 1;
+        if (lat[start_x][start_y]==-1){
+            cluster[start_x][start_y] = 1;
+            double rand_num = (double)rand();
+            if (rand_num<=(1-(exponential))*max){
+                lat[start_x][start_y] *= 1;
+            }
+            spinScreener(visited,cluster, exponential,(start_x+1)%(L),start_y,ref);
+            spinScreener(visited,cluster, exponential,(L+start_x-1)%(L),start_y,ref);
+            spinScreener(visited,cluster, exponential,start_x,(start_y+1)%(L),ref);
+            spinScreener(visited,cluster, exponential,start_x,(L+start_y-1)%(L),ref);
+    }}
     }
-}
+
 
 void sweep(double exponential)
 {
-    int rand_x = (int)(((double)random())/(max)/L);
-    int rand_y = (int)(((double)random())/(max)/L);
-    spinScreener(exponential,rand_x,rand_y,lat[rand_x][rand_y]);
+    int visited[32][32] = {0};
+    // for (int i=0;i<L;i++){
+    //     printf("%i\t",visited[10][i]);
+    // }    
+    // printf("\n");
+    int rand_x = (int)(((double)random())/(max)*L);
+    int rand_y = (int)(((double)random())/(max)*L);
+    int cluster[32][32];
+    int ref = lat[rand_x][rand_y];
+    spinScreener(visited,cluster, exponential,rand_x,rand_y,ref);
+    for (int i =0;i<L;i++){
+        for (int j=0;j<L;j++){
+            if (cluster[i][j]==0){
+                printf("\033[0;37m");
+                if (lat[i][j]==1){
+                    printf("+1 ");
+                }
+                else{
+                printf("%i ",lat[i][j]);
+                }
+                               
+            }
+            else if (i==rand_x && j==rand_y){
+                printf("\033[0;31m");
+                if (lat[i][j]==1){
+                    printf("+1 ");
+                }
+                else{
+                printf("%i ",lat[i][j]);
+                }
+            }
+            else{
+                printf("\033[0;32m");
+                if (lat[i][j]==1){
+                    printf("+1 ");
+                }
+                else{
+                printf("%i ",lat[i][j]);
+                }
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
