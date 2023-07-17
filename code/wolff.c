@@ -5,14 +5,15 @@
 #include <math.h>
 //#include <omp.h>
 
-const int L = 32;
+const int L = 128;
 // boundary conditions implementation
 void rb();
-void spinScreener(int visited[32][32],int cluster[32][32], double exponential, int start_x, int start_y, int ref);
+void spinScreener(int (*visited)[128],int (*cluster)[128], double exponential, int start_x, int start_y, int ref, int *count);
 void sweep(double exponential);
 int Ham(int i, int j);
+void printCluster(int (*cluster)[128]);
 // da omp für mich nicht funktioniert hat, habe ich das Programm wieder auf ein Gitter umgeschrieben um möglicherweise Zeit zu sparen.
-int lat[32][32] = {0};
+int lat[128][128] = {0};
 
 // maximalwert des random number generators in C
 double max = (double)RAND_MAX;
@@ -45,11 +46,11 @@ int main()
 
     // Datei in die alle Messwerte geschrieben werden.
     FILE *datei;
-    datei = fopen("mag_wolff.txt","w");
+    datei = fopen("mag_wolff_L.txt","w");
 
     // Datei mit den relavanten Mittelwerten von eps und |m|
     FILE *datei2;
-    datei2 = fopen("ham_wolff.txt","w");
+    datei2 = fopen("ham_wolff_L.txt","w");
 
     // FILE *cluster;
     // cluster = fopen("suveillance.txt","w");
@@ -59,7 +60,7 @@ int main()
     //#pragma omp parallel f
     for (int n=0; n<35;++n)
     {
-        if (n>=13){
+        if (n>=10){
     double expo = exp(-2*beta[n]);
    
    for (int i=0;i<L;++i)
@@ -73,7 +74,7 @@ int main()
     }
         int Hamilton_store = 0;
         int mag_store = 0;
-        int iter = 400;
+        int iter = 200000;
         
         for ( int N =0; N<iter; ++N)
         {
@@ -151,38 +152,52 @@ int Ham(int i, int j)
 
 }
 
-void spinScreener(int visited[32][32],int cluster[32][32], double exponential,int start_x,int start_y,int ref){
-    if (visited[start_x][start_y]==0){
-        visited[start_x][start_y] = 1;
-        if (lat[start_x][start_y]==-1){
-            cluster[start_x][start_y] = 1;
+void spinScreener(int (*visited)[128],int (*cluster)[128], double exponential,int start_x,int start_y,int ref,int *count){
+    // if (*count<15){
+    //     *count+=1;
+    
+    // if (*(*(visited+start_x)+start_y)==0){
+    //     *(*(visited+start_x)+start_y) = 1;
+        if (lat[start_x][start_y]==ref){
+            // *(*(cluster+start_x)+start_y) += 1;
             double rand_num = (double)rand();
             if (rand_num<=(1-(exponential))*max){
-                lat[start_x][start_y] *= 1;
-            }
-            spinScreener(visited,cluster, exponential,(start_x+1)%(L),start_y,ref);
-            spinScreener(visited,cluster, exponential,(L+start_x-1)%(L),start_y,ref);
-            spinScreener(visited,cluster, exponential,start_x,(start_y+1)%(L),ref);
-            spinScreener(visited,cluster, exponential,start_x,(L+start_y-1)%(L),ref);
+                lat[start_x][start_y] *= -1;
+                // *(*(cluster+start_x)+start_y) += 1;
+            
+            // printCluster(cluster);
+            spinScreener(visited,cluster, exponential,(start_x+1)%(L),start_y,ref,count);
+            spinScreener(visited,cluster, exponential,(L+start_x-1)%(L),start_y,ref,count);
+            spinScreener(visited,cluster, exponential,start_x,(start_y+1)%(L),ref,count);
+            spinScreener(visited,cluster, exponential,start_x,(L+start_y-1)%(L),ref,count);
     }}
     }
 
 
 void sweep(double exponential)
 {
-    int visited[32][32] = {0};
+    int visited[128][128] = {0};
+    int (*ptr_visited)[128] = visited;
     // for (int i=0;i<L;i++){
     //     printf("%i\t",visited[10][i]);
     // }    
     // printf("\n");
     int rand_x = (int)(((double)random())/(max)*L);
     int rand_y = (int)(((double)random())/(max)*L);
-    int cluster[32][32];
+    int cluster[128][128] ={0};
+    cluster[rand_x][rand_y] = -2;
+    int (*ptr_cluster)[128] = cluster;
     int ref = lat[rand_x][rand_y];
-    spinScreener(visited,cluster, exponential,rand_x,rand_y,ref);
+
+    int count = 0;
+    spinScreener(ptr_visited,ptr_cluster, exponential,rand_x,rand_y,ref,&count);
+    // printCluster(ptr_cluster);
+    }
+
+void printCluster(int (*cluster)[128]){
     for (int i =0;i<L;i++){
         for (int j=0;j<L;j++){
-            if (cluster[i][j]==0){
+            if (*(*(cluster+i)+j)==0){
                 printf("\033[0;37m");
                 if (lat[i][j]==1){
                     printf("+1 ");
@@ -192,7 +207,7 @@ void sweep(double exponential)
                 }
                                
             }
-            else if (i==rand_x && j==rand_y){
+            else if (*(*(cluster+i)+j)<0){
                 printf("\033[0;31m");
                 if (lat[i][j]==1){
                     printf("+1 ");
@@ -214,5 +229,6 @@ void sweep(double exponential)
         printf("\n");
     }
     printf("\n");
+
 }
 
